@@ -1,0 +1,48 @@
+version: '3.1'
+
+services:
+  ezyplatform_database:
+    image: mysql:latest
+    container_name: ezyplatform_db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    networks:
+      - ezynetwork
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: ezyplatform
+      MYSQL_USER: ezyuser
+      MYSQL_PASSWORD: 12345678
+
+  ezyplatform_app:
+    container_name: ezyplatform_app
+    image: youngmonkey/ezyplatform:0.0.4
+    build: .
+    restart: always
+    depends_on:
+      - ezyplatform_database
+    volumes:
+      - ./logs:/youngmonkey/ezyplatform/logs
+    ports:
+      - 8080:8080
+      - 9090:9090
+    networks:
+      - ezynetwork
+    entrypoint: bash cli.sh "console admin"
+    #entrypoint: bash cli.sh "start admin"
+
+  # ezyplatform_dbviewer:
+  #   image: adminer:latest
+  #   container_name: ezyplatform_dbviewer
+  #   restart: always
+  #   ports:
+  #     - 8080:8080
+  #   networks:
+  #     - ezynetwork
+
+networks:
+  ezynetwork:
+    name: ezynetwork
+    driver: bridge
